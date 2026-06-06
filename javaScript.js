@@ -11,301 +11,344 @@ function showTab(tabId) {
 }
 
 // ======================
-// CHATBOT
+// KIẾN THỨC CHATBOT
 // ======================
 
-let chats = JSON.parse(localStorage.getItem("chats")) || [];
+let knowledge =
+JSON.parse(localStorage.getItem("knowledge")) || {
+
+    "xin chào": "Xin chào 👋",
+    "hello": "Xin chào 👋",
+    "hi": "Xin chào 👋",
+
+    "bạn là ai":
+    "Mình là AI Hoàng Tấn Phát 🤖",
+
+    "ai tạo ra bạn":
+    "Mình được Hoàng Tấn Phát tạo ra 😎",
+
+    "bạn khỏe không":
+    "Mình khỏe, cảm ơn bạn 😊"
+};
+
+// ======================
+// LỊCH SỬ CHAT
+// ======================
+
+let chats =
+JSON.parse(localStorage.getItem("chats")) || [];
+
 let currentChat = -1;
 
-function saveChats() {
-    localStorage.setItem("chats", JSON.stringify(chats));
+// ======================
+// LƯU DỮ LIỆU
+// ======================
+
+function saveData() {
+
+    localStorage.setItem(
+        "knowledge",
+        JSON.stringify(knowledge)
+    );
+
+    localStorage.setItem(
+        "chats",
+        JSON.stringify(chats)
+    );
 }
 
-function updateChatList() {
-
-    const list = document.getElementById("chatList");
-
-    if (!list) return;
-
-    list.innerHTML = "";
-
-    chats.forEach((chat, index) => {
-
-        let option = document.createElement("option");
-
-        option.value = index;
-        option.textContent = "Cuộc trò chuyện " + (index + 1);
-
-        list.appendChild(option);
-    });
-
-    list.value = currentChat;
-}
-
-function loadChat(index) {
-
-    if (index < 0 || !chats[index]) return;
-
-    currentChat = index;
-
-    document.getElementById("chatBox").innerHTML =
-        chats[index];
-}
+// ======================
+// NEW CHAT
+// ======================
 
 function newChat() {
 
-    const startMessage =
-        "<div><b>Bot:</b> Xin chào 👋</div>";
+    const chat = {
+        name:
+        "Chat " +
+        (chats.length + 1),
 
-    chats.push(startMessage);
+        messages: [
+            "Bot: Xin chào 👋"
+        ]
+    };
 
-    currentChat = chats.length - 1;
+    chats.push(chat);
 
-    saveChats();
+    currentChat =
+    chats.length - 1;
+
+    saveData();
+
     updateChatList();
 
-    document.getElementById("chatBox").innerHTML =
-        startMessage;
+    renderMessages();
 }
+
+// ======================
+// DANH SÁCH CHAT
+// ======================
+
+function updateChatList() {
+
+    const select =
+    document.getElementById(
+        "chatList"
+    );
+
+    if (!select) return;
+
+    select.innerHTML = "";
+
+    chats.forEach(
+    (chat,index)=>{
+
+        let option =
+        document.createElement(
+        "option"
+        );
+
+        option.value =
+        index;
+
+        option.textContent =
+        chat.name;
+
+        select.appendChild(
+        option
+        );
+
+    });
+
+    select.value =
+    currentChat;
+}
+
+// ======================
+// CHỌN CHAT
+// ======================
+
+function loadChat() {
+
+    const select =
+    document.getElementById(
+        "chatList"
+    );
+
+    currentChat =
+    Number(select.value);
+
+    renderMessages();
+}
+
+// ======================
+// HIỂN THỊ TIN NHẮN
+// ======================
+
+function renderMessages() {
+
+    const box =
+    document.getElementById(
+        "chatBox"
+    );
+
+    if (!box) return;
+
+    box.innerHTML = "";
+
+    if (
+        currentChat < 0 ||
+        !chats[currentChat]
+    ) return;
+
+    chats[currentChat]
+    .messages
+    .forEach(msg => {
+
+        box.innerHTML +=
+        msg + "<br>";
+
+    });
+
+    box.scrollTop =
+    box.scrollHeight;
+}
+
+// ======================
+// GỬI TIN NHẮN
+// ======================
 
 function sendMessage() {
 
     const input =
-        document.getElementById("userInput");
+    document.getElementById(
+        "userInput"
+    );
 
-    let message =
-        input.value.trim();
+    let text =
+    input.value.trim();
 
-    if (message === "") return;
+    if (
+        text === ""
+    ) return;
 
-    const box =
-        document.getElementById("chatBox");
+    if (
+        currentChat === -1
+    ) {
+        newChat();
+    }
 
-    box.innerHTML +=
-        `<div><b>Bạn:</b> ${message}</div>`;
+    chats[currentChat]
+    .messages.push(
+    "Bạn: " + text
+    );
 
-    const reply =
-        getBotReply(message);
+    let botReply =
+    "Mình chưa biết. Hãy dạy mình bằng: dạy câu hỏi : câu trả lời";
 
-    box.innerHTML +=
-        `<div><b>Bot:</b> ${reply}</div>`;
+    // ==================
+    // DẠY CHATBOT
+    // ==================
 
-    chats[currentChat] = box.innerHTML;
+    if (
+        text.toLowerCase()
+        .startsWith("dạy ")
+    ) {
 
-    saveChats();
+        let data =
+        text.substring(4);
 
-    box.scrollTop = box.scrollHeight;
+        let parts =
+        data.split(":");
+
+        if (
+            parts.length >= 2
+        ) {
+
+            let question =
+            parts[0]
+            .trim()
+            .toLowerCase();
+
+            let answer =
+            parts.slice(1)
+            .join(":")
+            .trim();
+
+            knowledge[
+            question
+            ] = answer;
+
+            botReply =
+            "Mình đã học: " +
+            question;
+        }
+
+    } else {
+
+        let userText =
+        text.toLowerCase();
+
+        let found =
+        false;
+
+        for (
+            let question
+            in knowledge
+        ) {
+
+            let q =
+            question
+            .toLowerCase();
+
+            if (
+
+                userText === q ||
+
+                userText.includes(
+                q
+                ) ||
+
+                q.includes(
+                userText
+                )
+
+            ) {
+
+                botReply =
+                knowledge[
+                question
+                ];
+
+                found =
+                true;
+
+                break;
+            }
+        }
+    }
+
+    chats[currentChat]
+    .messages.push(
+    "Bot: " + botReply
+    );
+
+    saveData();
+
+    renderMessages();
+
+    updateChatList();
 
     input.value = "";
 }
 
-function getBotReply(message) {
-
-    let msg =
-        message.toLowerCase();
-
-    if (
-        msg.includes("chào") ||
-        msg.includes("hello") ||
-        msg.includes("hi")
-    ) {
-        return "Xin chào 👋";
-    }
-
-    if (
-        msg.includes("khỏe") ||
-        msg.includes("khỏe không")
-    ) {
-        return "Mình khỏe 😊";
-    }
-
-    if (
-        msg.includes("tên bạn") ||
-        msg.includes("bạn tên gì")
-    ) {
-        return "Mình là AI Hoàng Tấn Phát 🤖";
-    }
-
-    if (
-        msg.includes("ai tạo") ||
-        msg.includes("người tạo")
-    ) {
-        return "Mình được tạo bởi Hoàng Tấn Phát 😎";
-    }
-
-    if (msg.includes("html")) {
-        return "HTML dùng để tạo cấu trúc website.";
-    }
-
-    if (msg.includes("css")) {
-        return "CSS dùng để thiết kế giao diện website.";
-    }
-
-    if (
-        msg.includes("javascript") ||
-        msg.includes("js")
-    ) {
-        return "JavaScript dùng để tạo tính năng website.";
-    }
-
-    return "Mình đang học thêm để trả lời tốt hơn 😊";
-}
-
 // ======================
-// HỌC TOOL
+// ENTER ĐỂ GỬI
 // ======================
 
-function showTool(tool) {
-
-    let content = "";
-
-    if (tool === "html") {
-
-        content = `
-        <h3>🌐 HTML</h3>
-
-        <p>HTML là nền tảng của website.</p>
-
-        <p>Dùng để tạo:</p>
-
-        <ul>
-            <li>Tiêu đề</li>
-            <li>Ảnh</li>
-            <li>Nút bấm</li>
-            <li>Bảng</li>
-            <li>Biểu mẫu</li>
-        </ul>
-        `;
-    }
-
-    if (tool === "css") {
-
-        content = `
-        <h3>🎨 CSS</h3>
-
-        <p>CSS giúp website đẹp hơn.</p>
-
-        <ul>
-            <li>Đổi màu</li>
-            <li>Đổi font chữ</li>
-            <li>Tạo hiệu ứng</li>
-            <li>Responsive</li>
-        </ul>
-        `;
-    }
-
-    if (tool === "js") {
-
-        content = `
-        <h3>⚡ JavaScript</h3>
-
-        <p>JavaScript giúp website thông minh hơn.</p>
-
-        <ul>
-            <li>Chatbot</li>
-            <li>Game</li>
-            <li>Đăng nhập</li>
-            <li>Tính toán</li>
-        </ul>
-        `;
-    }
-
-    if (tool === "vscode") {
-
-        content = `
-        <h3>💻 VS Code</h3>
-
-        <p>Phần mềm lập trình miễn phí.</p>
-
-        <p>Nên cài:</p>
-
-        <ul>
-            <li>Live Server</li>
-            <li>Prettier</li>
-            <li>HTML CSS Support</li>
-        </ul>
-        `;
-    }
-
-    document.getElementById(
-        "toolContent"
-    ).innerHTML = content;
-}
-
-// ======================
-// HỒ SƠ
-// ======================
-
-function changeName() {
+document
+.addEventListener(
+"DOMContentLoaded",
+function () {
 
     const input =
-        document.getElementById("nameInput");
-
-    const name =
-        input.value.trim();
-
-    if (name === "") return;
-
-    localStorage.setItem(
-        "userName",
-        name
-    );
-
     document.getElementById(
-        "profileName"
-    ).innerText = name;
-}
-
-function toggleTheme() {
-
-    document.body.classList.toggle(
-        "light-mode"
+    "userInput"
     );
-}
 
-// ======================
-// KHỞI ĐỘNG
-// ======================
+    if (input) {
 
-window.onload = function () {
+        input.addEventListener(
+        "keypress",
+        function(e){
 
-    let savedName =
-        localStorage.getItem("userName");
+            if(
+                e.key ===
+                "Enter"
+            ){
 
-    if (savedName) {
+                sendMessage();
 
-        document.getElementById(
-            "profileName"
-        ).innerText = savedName;
+            }
+
+        });
+
     }
 
-    if (chats.length === 0) {
+    if (
+        chats.length === 0
+    ) {
+
         newChat();
+
     } else {
 
         currentChat = 0;
 
         updateChatList();
 
-        document.getElementById(
-            "chatBox"
-        ).innerHTML = chats[0];
+        renderMessages();
+
     }
 
-    const list =
-        document.getElementById(
-            "chatList"
-        );
-
-    if (list) {
-
-        list.addEventListener(
-            "change",
-            function () {
-                loadChat(
-                    Number(this.value)
-                );
-            }
-        );
-    }
-};
+});
