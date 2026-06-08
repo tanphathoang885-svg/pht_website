@@ -29,6 +29,7 @@ JSON.parse(localStorage.getItem("knowledge")) || {
 
     "bạn khỏe không":
     "Mình khỏe, cảm ơn bạn 😊"
+
 };
 
 // ======================
@@ -64,9 +65,7 @@ function saveData() {
 function newChat() {
 
     const chat = {
-        name:
-        "Chat " +
-        (chats.length + 1),
+        name: "Chat " + (chats.length + 1),
 
         messages: [
             "Bot: Xin chào 👋"
@@ -75,8 +74,7 @@ function newChat() {
 
     chats.push(chat);
 
-    currentChat =
-    chats.length - 1;
+    currentChat = chats.length - 1;
 
     saveData();
 
@@ -92,36 +90,26 @@ function newChat() {
 function updateChatList() {
 
     const select =
-    document.getElementById(
-        "chatList"
-    );
+    document.getElementById("chatList");
 
     if (!select) return;
 
     select.innerHTML = "";
 
-    chats.forEach(
-    (chat,index)=>{
+    chats.forEach((chat, index) => {
 
         let option =
-        document.createElement(
-        "option"
-        );
+        document.createElement("option");
 
-        option.value =
-        index;
+        option.value = index;
 
-        option.textContent =
-        chat.name;
+        option.textContent = chat.name;
 
-        select.appendChild(
-        option
-        );
+        select.appendChild(option);
 
     });
 
-    select.value =
-    currentChat;
+    select.value = currentChat;
 }
 
 // ======================
@@ -131,9 +119,7 @@ function updateChatList() {
 function loadChat() {
 
     const select =
-    document.getElementById(
-        "chatList"
-    );
+    document.getElementById("chatList");
 
     currentChat =
     Number(select.value);
@@ -148,9 +134,7 @@ function loadChat() {
 function renderMessages() {
 
     const box =
-    document.getElementById(
-        "chatBox"
-    );
+    document.getElementById("chatBox");
 
     if (!box) return;
 
@@ -181,26 +165,20 @@ function renderMessages() {
 function sendMessage() {
 
     const input =
-    document.getElementById(
-        "userInput"
-    );
+    document.getElementById("userInput");
 
     let text =
     input.value.trim();
 
-    if (
-        text === ""
-    ) return;
+    if (text === "") return;
 
-    if (
-        currentChat === -1
-    ) {
+    if (currentChat === -1) {
         newChat();
     }
 
     chats[currentChat]
     .messages.push(
-    "Bạn: " + text
+        "Bạn: " + text
     );
 
     let botReply =
@@ -235,9 +213,8 @@ function sendMessage() {
             .join(":")
             .trim();
 
-            knowledge[
-            question
-            ] = answer;
+            knowledge[question] =
+            answer;
 
             botReply =
             "Mình đã học: " +
@@ -249,39 +226,22 @@ function sendMessage() {
         let userText =
         text.toLowerCase();
 
-        let found =
-        false;
-
         for (
             let question
             in knowledge
         ) {
 
             let q =
-            question
-            .toLowerCase();
+            question.toLowerCase();
 
             if (
-
                 userText === q ||
-
-                userText.includes(
-                q
-                ) ||
-
-                q.includes(
-                userText
-                )
-
+                userText.includes(q) ||
+                q.includes(userText)
             ) {
 
                 botReply =
-                knowledge[
-                question
-                ];
-
-                found =
-                true;
+                knowledge[question];
 
                 break;
             }
@@ -290,7 +250,7 @@ function sendMessage() {
 
     chats[currentChat]
     .messages.push(
-    "Bot: " + botReply
+        "Bot: " + botReply
     );
 
     saveData();
@@ -306,49 +266,47 @@ function sendMessage() {
 // ENTER ĐỂ GỬI
 // ======================
 
-document
-.addEventListener(
-"DOMContentLoaded",
-function () {
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    const input =
-    document.getElementById(
-    "userInput"
-    );
+        const input =
+        document.getElementById(
+            "userInput"
+        );
 
-    if (input) {
+        if (input) {
 
-        input.addEventListener(
-        "keypress",
-        function(e){
+            input.addEventListener(
+                "keypress",
+                function (e) {
 
-            if(
-                e.key ===
-                "Enter"
-            ){
+                    if (
+                        e.key === "Enter"
+                    ) {
 
-                sendMessage();
+                        sendMessage();
 
-            }
+                    }
 
-        });
+                }
+            );
+        }
 
+        if (
+            chats.length === 0
+        ) {
+
+            newChat();
+
+        } else {
+
+            currentChat = 0;
+
+            updateChatList();
+
+            renderMessages();
+
+        }
     }
-
-    if (
-        chats.length === 0
-    ) {
-
-        newChat();
-
-    } else {
-
-        currentChat = 0;
-
-        updateChatList();
-
-        renderMessages();
-
-    }
-
-});
+);
